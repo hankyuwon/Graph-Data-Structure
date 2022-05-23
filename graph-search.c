@@ -10,7 +10,11 @@ typedef struct Node{
 typedef struct Graph{
     int numVertices;
     struct Node** adjlist;
+    int VertexNumber[10]; // adj[i]에서 전체 다 출력하지말고 edge가 존재하는, 출력할게 있는것만 추려서 출력하게
+    //Vertex가 VertexNumber[]에 들어감.
+    //print해줄때 adj[VertexNumber[]] 이렇게
 }Graph;
+
 
 int initializeGraph(Graph** graph);
 Node* createNode(int v);
@@ -100,12 +104,19 @@ int freeGraph(Graph* graph) // 그래프 메모리 해제 함수
 
 void InsertVertex(Graph* graph,int v)
 {
-    if(graph->numVertices>=maxvertex)
+    if(v>maxvertex)
     {
-        printf("추가할수있는 Vertex의 개수를 넘었다");
+        printf(" Vertex number is too high!\n");
         return;
     }
 
+    if(graph->numVertices>=maxvertex)
+    {
+        printf("Too many Vertex!\n");
+        return;
+    }
+
+    graph->VertexNumber[graph->numVertices]=v;
     graph->numVertices++;
 }
 
@@ -130,12 +141,16 @@ void insertEdge(Graph* graph, int s, int d)
 
 void printGraph(Graph* graph)
 {
-    for(int v=0;v<graph->numVertices;v++)
+    for(int a=0;a<graph->numVertices;a++)
     {
-        Node* temp=graph->adjlist[v];
-        printf("\n Vertex %d\n: ",v);
+        Node* temp=graph->adjlist[graph->VertexNumber[a]];
+        printf("\n Vertex %d\n: ", graph->VertexNumber[a]);
         while(temp){
-            printf("%d -> ", temp->vertex);
+            printf("%d ", temp->vertex);
+            if(temp->link!=NULL)
+            {
+                printf("-> ");
+            }
             temp=temp->link;
         }
         printf("\n");
@@ -144,6 +159,13 @@ void printGraph(Graph* graph)
 
 void addEdge(Graph* graph, int s, int d)
 {
+    if(s==d)
+    {
+        printf("Don't input same Vertex\n");
+        return;
+    }
+    
+
     Node* newNode=createNode(d);
     newNode->link=graph->adjlist[s];
     graph->adjlist[s]=newNode;
