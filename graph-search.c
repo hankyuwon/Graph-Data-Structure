@@ -46,11 +46,17 @@ int isEmpty(queue *q);
 void printQueue(queue *q);
 void bfs(Graph *graph, int start);
 
+
+//DFS 함수
+void DFS(Graph* graph, int vertex);
+void initvisited(Graph* graph);
+
+
 int main()
 {
     char command;
     int v, s, d;
-    int start;
+    int start,start2;
     Graph *graph = NULL;
     do
     {
@@ -87,6 +93,10 @@ int main()
             break;
         case 'd':
         case 'D':
+        printf("input start vertex number = ");
+        scanf("%d",&start2);
+        DFS(graph,start2);
+        initvisited(graph);
             break;
         case 'b':
         case 'B':
@@ -213,7 +223,7 @@ void addEdge(Graph *graph, int s, int d)
 
 //여기서부터 BFS에 관련된 Queue함수
 
-void bfs(Graph *graph, int startVertex)
+void bfs(Graph *graph, int startVertex) // vertex가 없는게 들어오면 없다고 해주는 기능 있어야할듯
 {
     queue *q = createQueue();
 
@@ -315,5 +325,35 @@ void printQueue(queue *q)
         {
             printf("%d", q->items[i]);
         }
+    }
+}
+
+
+
+// DFS algo
+
+void DFS(Graph* graph, int vertex) {
+  Node* adjL = graph->adjlist[vertex];
+  Node* temp = adjL;
+
+  graph->visited[vertex] = 1;
+  printf(" %3d ", vertex);
+
+  while (temp != NULL) {
+    int connectedVertex = temp->vertex;
+
+    if (graph->visited[connectedVertex] == 0) {
+      DFS(graph, connectedVertex);
+    }
+    temp = temp->link;
+  }
+}
+
+void initvisited(Graph* graph)
+{
+    printf("\n");
+    for (int i = 0; i < maxvertex; i++)
+    {
+        graph->visited[i] = 0;    // visited 0으로 초기화
     }
 }
