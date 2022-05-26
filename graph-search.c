@@ -1,5 +1,6 @@
 // 무방향 그래프, 다중간선 없음, 자기간선 없음, 동일한 넘버를 갖는 Vertex 존재하지 않음
-//5.25/ 17:50/ 메모리 해제만 하면 끝!!
+// 5.26 00:10 free함수 완료 FINISH!!!
+
 #include <stdio.h>
 #include <stdlib.h>
 #define maxvertex 10
@@ -46,9 +47,11 @@ int dequeue(queue *q);
 void display(queue *q);
 int isEmpty(queue *q);
 void printQueue(queue *q);
+
+// bfs 함수
 void bfs(Graph *graph, int start);
 
-// DFS 함수
+// dfs 함수
 void DFS(Graph *graph, int vertex);
 void initvisited(Graph *graph);
 
@@ -58,6 +61,9 @@ int main()
     int v, s, d;
     int start, start2;
     Graph *graph = NULL;
+
+    printf("[hankyuwon][2019037002]\n");
+    
     do
     {
         printf("----------------------------------------------------------------\n");
@@ -148,8 +154,27 @@ int initializeGraph(Graph **graph)
 
 int freeGraph(Graph *graph) // 그래프 메모리 해제 함수
 {
+    // adjlist 가서 연결된거 다 해제
+    // visited 해제
+    // graph자체 해제
+
+    Node *f;
+    Node *temp;
+    for (int i = 0; i < maxvertex; i++)
+    {
+        f = graph->adjlist[i];
+        while (f != NULL)
+        {
+            temp = f;
+            f = f->link;
+            free(temp);
+        }
+    }
+
     free(graph->adjlist);
+
     free(graph->visited);
+
     free(graph);
 }
 
@@ -226,25 +251,25 @@ void addEdge(Graph *graph, int s, int d)
         temp++;
     }
 
-    if(cs==0&&cd==0) // cs는 s가 존재하면 1, 존재하지 않으면 0. cd도 동일하다. 검사를 통하여 어떤 Vertex가 없는지 print해준다.
+    if (cs == 0 && cd == 0) // cs는 s가 존재하면 1, 존재하지 않으면 0. cd도 동일하다. 검사를 통하여 어떤 Vertex가 없는지 print해준다.
     {
-        printf(" No exists Vertex %d , %d\n",s,d);
-        return;
-    }
-    
-    if (cs==0)
-    {
-        printf(" No exist Vertex %d\n",s);
+        printf(" No exists Vertex %d , %d\n", s, d);
         return;
     }
 
-    if(cd==0)
+    if (cs == 0)
     {
-        printf(" No exist Vertex %d\n",d);
+        printf(" No exist Vertex %d\n", s);
         return;
     }
 
-    if (s == d) // 동일한 Vertex가 들어오면 just return 
+    if (cd == 0)
+    {
+        printf(" No exist Vertex %d\n", d);
+        return;
+    }
+
+    if (s == d) // 동일한 Vertex가 들어오면 just return
     {
         printf("Don't input same Vertex\n");
         return;
@@ -252,27 +277,78 @@ void addEdge(Graph *graph, int s, int d)
 
     // 이미 존재하는 Edge인지 확인
     Node *jump = graph->adjlist[d]; // adjlist[d]로 가서 링크를 계속 타고타고가면서 Vertex가 s인 노드가 있는지 확인한다
-    while(jump)
+    while (jump)
     {
-        if(jump->vertex==s) // Vertex가 s인 node가 있다는 건 이미 edge가 존재한다는 의미이므로 just return
+        if (jump->vertex == s) // Vertex가 s인 node가 있다는 건 이미 edge가 존재한다는 의미이므로 just return
         {
-        printf("Already Exist Edge \n");
-        return;
+            printf("Already Exist Edge \n");
+            return;
         }
-        jump=jump->link;
+        jump = jump->link;
     }
     // adjlist[s]에 d를 확인하지 않는 이유는 어차피 무방향 이므로 하나만 확인해도 된다.
 
-
-// adjlist[] 에 d Node를 만든 후, 원래 있던 노드는 d의 link로 걸어주고 adjlist[s]=d 로 만든다.
-// s도 동일하게 해준다.
-    Node *newNode = createNode(d);
-    newNode->link = graph->adjlist[s];
-    graph->adjlist[s] = newNode;
-
+    // adjlist[] 에 d Node를 만든 후, 원래 있던 노드는 d의 link로 걸어주고 adjlist[s]=d 로 만든다.
+    // s도 동일하게 해준다.
+    Node* newNode = createNode(d);
+    Node* prev;
+    Node* temperd = graph->adjlist[s];
+    while(1){
+        if(graph->adjlist[s]==NULL)
+        {
+            graph->adjlist[s]=newNode;
+            break;
+        }
+        if(temperd==NULL)
+        {
+            prev->link=newNode;
+            break;
+        }
+        if(temperd->vertex>d)
+        {
+            if(temperd==graph->adjlist[s])
+            {
+                graph->adjlist[s]=newNode;
+                newNode->link=temperd;
+            }else{
+            prev->link=newNode;
+            newNode->link=temperd;
+            }
+            break;
+        }
+        prev=temperd;
+        temperd=temperd->link;
+    }
     newNode = createNode(s);
-    newNode->link = graph->adjlist[d];
-    graph->adjlist[d] = newNode;
+    Node* tempers = graph-> adjlist[d];
+    prev=tempers;
+    while(1){
+        if(graph->adjlist[d]==NULL)
+        {
+            graph->adjlist[d]=newNode;
+            break;
+        }
+        if(tempers==NULL)
+        {
+            prev->link=newNode;
+            break;
+        }
+        if(tempers->vertex>s)
+        {
+            if(tempers==graph->adjlist[d])
+            {
+                graph->adjlist[d]=newNode;
+                newNode->link=tempers;
+            }else{
+            prev->link=newNode;
+            newNode->link=tempers;
+            }
+            break;
+        }
+        prev=tempers;
+        tempers=tempers->link;
+    }
+    return;
 }
 
 //여기서부터 BFS에 관련된 Queue함수
@@ -280,21 +356,20 @@ void addEdge(Graph *graph, int s, int d)
 void bfs(Graph *graph, int startVertex)
 {
     // graph에 있는 Vertex 중 startVertex가 존재하는지 먼저 검사
-    int tempp=0;
-    int c=0;
-    while(tempp<maxvertex)
+    int tempp = 0;
+    int c = 0;
+    while (tempp < maxvertex)
     {
-        if(graph->VertexNumber[tempp]==startVertex)
-        c++;
+        if (graph->VertexNumber[tempp] == startVertex)
+            c++;
         tempp++;
     }
 
-    if(c==0) // 존재하지 않으면 just return
+    if (c == 0) // 존재하지 않으면 just return
     {
         printf(" No exist %d \n", startVertex);
         return;
     }
-
 
     queue *q = createQueue();
 
@@ -321,6 +396,9 @@ void bfs(Graph *graph, int startVertex)
         }
     }
     printf("\n");
+
+    free(q); // bfs가 끝나면 그냥 바로 free memory. bfs함수 내에 createQueue를 넣었으므로 free도 같이 넣어줬음
+
 }
 
 queue *createQueue()
@@ -366,7 +444,6 @@ int dequeue(queue *q)
         q->front++;
         if (q->front > q->rear)
         {
-            // printf("Resetting queue ");
             q->front = q->rear = -1;
         }
     }
@@ -393,17 +470,17 @@ void printQueue(queue *q)
 // DFS algo
 
 void DFS(Graph *graph, int vertex)
-{   // graph에 있는 Vertex 중 DFS함수에 들어온 Vertex가 존재하는지 먼저 검사
-    int tempp=0;
-    int c=0;
-    while(tempp<maxvertex)
+{ // graph에 있는 Vertex 중 DFS함수에 들어온 Vertex가 존재하는지 먼저 검사
+    int tempp = 0;
+    int c = 0;
+    while (tempp < maxvertex)
     {
-        if(graph->VertexNumber[tempp]==vertex)
-        c++;
+        if (graph->VertexNumber[tempp] == vertex)
+            c++;
         tempp++;
     }
 
-    if(c==0) // 존재하지 않으면 just return
+    if (c == 0) // 존재하지 않으면 just return
     {
         printf(" No exist %d \n", vertex);
         return;
