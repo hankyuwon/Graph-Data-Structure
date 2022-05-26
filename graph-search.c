@@ -290,6 +290,7 @@ void addEdge(Graph *graph, int s, int d)
 
     // adjlist[] 에 d Node를 만든 후, 원래 있던 노드는 d의 link로 걸어주고 adjlist[s]=d 로 만든다.
     // s도 동일하게 해준다.
+<<<<<<< HEAD
     Node* newNode = createNode(d);
     Node* prev;
     Node* temperd = graph->adjlist[s];
@@ -319,6 +320,12 @@ void addEdge(Graph *graph, int s, int d)
         prev=temperd;
         temperd=temperd->link;
     }
+=======
+    Node *newNode = createNode(d);
+    newNode->link = graph->adjlist[s];
+    graph->adjlist[s] = newNode;
+
+>>>>>>> 761d1456aa164f3e08f651dffb9bf496d8b5e503
     newNode = createNode(s);
     Node* tempers = graph-> adjlist[d];
     prev=tempers;
